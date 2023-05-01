@@ -4,40 +4,49 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.apicallinjetpackcompose.ui.theme.ApiCallInJetpackComposeTheme
-import com.example.apicallinjetpackcompose.viewmodel.PostRequestViewModel
+import com.example.apicallinjetpackcompose.viewmodel.NiceViewModel
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
-    private lateinit var viewModel: PostRequestViewModel
+    private lateinit var viewModel: NiceViewModel
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             ApiCallInJetpackComposeTheme {
-                viewModel = ViewModelProvider(this).get(PostRequestViewModel::class.java)
+                viewModel = ViewModelProvider(this).get(NiceViewModel::class.java)
                 var isResponseVisible by remember { mutableStateOf(false) }
+
+                makeGetApiCall()
 
                 Column(
                     modifier = Modifier.padding(16.dp)
@@ -137,11 +146,11 @@ class MainActivity : ComponentActivity() {
                             colors = ButtonDefaults.buttonColors(Color(0xFF2E8BC0))
 
                         ) {
-                            Text(text = "Make Api Call", color = Color.White)
+                            Text(text = "Make Post Api Call", color = Color.White)
                         }
 
                         Button(
-                            onClick = { saveToDatabase() },
+                            onClick = { makeGetApiCall() },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(start = 8.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
@@ -149,17 +158,47 @@ class MainActivity : ComponentActivity() {
                             colors = ButtonDefaults.buttonColors(Color(0xFF2E8BC0))
 
                         ) {
-                            Text(text = "Save To Database", color = Color.White)
+                            Text(text = "Make Get Api Call", color = Color.White)
                         }
                     }
 
-                    val response by viewModel.responseObserver.observeAsState()
+                    val postResponse by viewModel.postRequestObserver.observeAsState()
+                    val getResponse by viewModel.getRequestObserver.observeAsState()
 
                     Text(
-                        text = response?.toString() ?: ""
+                        text = postResponse?.toString() ?: ""
 //                        modifier = Modifier.visibility(if (response != null) Visibility.Visible else Visibility.Hidden)
                     )
 
+                    LazyColumn{
+                        getResponse?.let { responseFromGetAPI ->
+                            items(responseFromGetAPI){ response ->
+                                val title = response.title
+                                val imageUrl = response.thumbnailUrl
+
+                                Text(
+                                    text = title,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp)
+                                )
+
+//                                https://github.com/skydoves/landscapist use it for GlideImage ref
+
+                                GlideImage(
+                                    imageModel = { imageUrl }, // loading a network image using an URL.
+                                    imageOptions = ImageOptions(
+                                        contentScale = ContentScale.Crop,
+                                        alignment = Alignment.Center
+                                    )
+                                )
+
+                                Spacer(modifier = Modifier.size(20.dp))
+
+                                Divider()
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -172,7 +211,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun saveToDatabase() {
-
+    private fun makeGetApiCall() {
+        lifecycleScope.launch(Dispatchers.IO){
+            viewModel.makeGetApiCall()
+        }
     }
 }

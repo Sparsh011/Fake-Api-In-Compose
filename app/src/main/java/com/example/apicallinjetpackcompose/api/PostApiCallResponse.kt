@@ -1,6 +1,6 @@
 package com.example.apicallinjetpackcompose.api
 
-data class ApiModelItem(
+data class PostApiCallResponse(
     val body: String,
     val id: Int,
     val title: String,

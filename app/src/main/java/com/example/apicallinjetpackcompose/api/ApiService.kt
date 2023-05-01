@@ -1,5 +1,6 @@
 package com.example.apicallinjetpackcompose.api
 
+import androidx.lifecycle.LiveData
 import hu.akarnokd.rxjava3.retrofit.RxJava3CallAdapterFactory
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -13,8 +14,12 @@ class ApiService {
         .build()
         .create(ApiInterface::class.java)
 
-    suspend fun makeApiCall(title: String, body: String): Response<ApiModelItem> {
+    suspend fun makeApiCall(title: String, body: String): Response<PostApiCallResponse> {
         val requestBody = PostRequest(title, body, 1)
-        return api.makeApiCall("application/json; charset=UTF-8", requestBody)
+        return api.makePostApiCall("application/json; charset=UTF-8", requestBody)
+    }
+
+    suspend fun makeGetApiCall(): List<GetRequestApiResponseItem> {
+        return api.makeGetApiCall()
     }
 }
