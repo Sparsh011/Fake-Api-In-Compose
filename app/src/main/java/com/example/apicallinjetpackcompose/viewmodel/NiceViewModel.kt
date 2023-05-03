@@ -1,17 +1,15 @@
 package com.example.apicallinjetpackcompose.viewmodel
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.apicallinjetpackcompose.api.PostApiCallResponse
 import com.example.apicallinjetpackcompose.api.ApiService
-import com.example.apicallinjetpackcompose.api.GetRequestApiResponse
 import com.example.apicallinjetpackcompose.api.GetRequestApiResponseItem
+import com.example.apicallinjetpackcompose.api.PostApiCallResponse
+import com.example.apicallinjetpackcompose.database.Database
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class NiceViewModel : ViewModel() {
     var postRequestObserver = MutableLiveData<PostApiCallResponse>()
